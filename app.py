@@ -121,7 +121,7 @@ def check_duplicate(new_product):
         product_names.append(product.product_name)
     if new_product.product_name in product_names:
         for product in session.query(Product):
-            if new_product.product_name == product.product_name and new_product.date_updated > product.date_updated:
+            if new_product.product_name == product.product_name and new_product.date_updated >= product.date_updated:
                 new_product.product_id = product.product_id
                 session.delete(product)
                 session.commit()
@@ -169,6 +169,12 @@ def add_csv():
                 date = clean_date(row[3])
                 new_product = Product(product_name=product, product_price=price, product_quantity=quantity, date_updated=date)
                 session.add(new_product)
+            elif product_in_db != None:
+                print(product_in_db)
+                # for product in session.query(Product):
+                #     if product_in_db.product_name == product.product_name and product_in_db.date_updated >= product.date_updated:
+                #         print(product_in_db)
+                #         print(product)
         session.commit()          
                
 
