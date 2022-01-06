@@ -79,6 +79,7 @@ def get_product_by_ID():
         \rPrice: ${selected_product.product_price / 100}
         \rDate Updated: {selected_product.date_updated}
         ''')
+    time.sleep(1.5)
 
 
 def add_product():
@@ -109,9 +110,10 @@ def add_product():
         if type(date) == datetime.date:
             date_error = False
     new_product = Product(product_name=product, product_price=price, product_quantity=quantity, date_updated=date)
-    session.add(new_product)
-    session.commit()
-    check_duplicate(new_product)
+    if check_duplicate(new_product):
+        session.add(new_product)
+        session.commit()
+
 
 def check_duplicate(new_product):
     product_names = []
@@ -120,19 +122,21 @@ def check_duplicate(new_product):
     if new_product.product_name in product_names:
         for product in session.query(Product):
             if new_product.product_name == product.product_name and new_product.date_updated > product.date_updated:
-                return
-            elif new_product.product_name == product.product_name and new_product.date_updated < product.date_updated:
-                session.delete(new_product)
+                new_product.product_id = product.product_id
+                session.delete(product)
                 session.commit()
-                print('This product is already up to date in the inventory') 
+                print('\nItem updated!')
+                time.sleep(1.5)
+                return True
+            elif new_product.product_name == product.product_name and new_product.date_updated < product.date_updated:
+                print('\nThis product is already up to date in the inventory')
+                time.sleep(1.5)
+                return False
     else:
-        return 
+        print('\nNew product added!')
+        time.sleep(1.5)
+        return True
         
-    # if new product is a duplicate and is updated after date updated
-    # if new_product.product_name in session.query(Product).filter(Product.product_name==new_product.product_name)
-    # update old product
-    # else if new product is a duplicate and is updated before date updated
-    # delete old product
 
 def backup_csv():
     with open('backup.csv', 'a') as csvfile:
@@ -165,12 +169,13 @@ def add_csv():
                 date = clean_date(row[3])
                 new_product = Product(product_name=product, product_price=price, product_quantity=quantity, date_updated=date)
                 session.add(new_product)
-        session.commit()
+        session.commit()          
+               
 
 
 def menu():
     while True:
-        print('STORE INVENTORY:\n')
+        print('\nSTORE INVENTORY:\n')
         for product in session.query(Product):
             print(f'{product.product_id}. {product.product_name}')
         print('''
@@ -184,7 +189,7 @@ def menu():
             return choice
         else: 
             input('''
-                \rPlease choose an option from above: v, a, or b
+                \rPlease choose an option from above: v, a, b, or x
                 \rPress enter to try again.''')
 
 
@@ -203,13 +208,6 @@ def app():
             app_running = False
             
         
-        
-
-
-
-
-
-
 if __name__ == '__main__':
     Base.metadata.create_all(engine)
     add_csv()
