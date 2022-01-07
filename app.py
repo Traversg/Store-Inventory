@@ -1,5 +1,7 @@
 from os import X_OK
 from types import new_class
+
+from sqlalchemy.sql.expression import update
 from models import Base, session, Product, engine
 import datetime
 import csv
@@ -170,11 +172,12 @@ def add_csv():
                 new_product = Product(product_name=product, product_price=price, product_quantity=quantity, date_updated=date)
                 session.add(new_product)
             elif product_in_db != None:
-                print(product_in_db)
-                # for product in session.query(Product):
-                #     if product_in_db.product_name == product.product_name and product_in_db.date_updated >= product.date_updated:
-                #         print(product_in_db)
-                #         print(product)
+                new_date = clean_date(row[3])
+                product = session.query(Product).filter(Product.product_name==row[0]).first()
+                if product_in_db.product_name == product.product_name and product.date_updated <= new_date:
+                    product.product_price = clean_price(row[1])
+                    product.product_quantity = int(row[2])
+                    product.date_updated = new_date
         session.commit()          
                
 
