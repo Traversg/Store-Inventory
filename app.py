@@ -36,8 +36,8 @@ def clean_price(price_str):
             \rThe price from should be a number with a $ symbol
             \rEx. $7.51
             \rPress enter to try again.
-            \r**********************''')  
-    else:              
+            \r**********************''')
+    else:
         return int(price_float * 100)
 
 
@@ -74,7 +74,8 @@ def get_product_by_ID():
         id_choice = clean_id(id_choice, id_options)
         if type(id_choice) == int:
             id_error = False
-    selected_product = session.query(Product).filter(Product.product_id==id_choice).first()
+    selected_product = (session.query(Product)
+                        .filter(Product.product_id == id_choice).first())
     print(f'''
         \n{selected_product.product_name}: \n
         \rQuantity: {selected_product.product_quantity}
@@ -97,7 +98,7 @@ def add_product():
         try:
             quantity = int(input('Quantity (Ex. 13): '))
             quantity_error = False
-        except ValueError: 
+        except ValueError:
             input('''
                 \n***** QUANTITY ERROR *****
                 \rThe quantity should be a number
@@ -111,7 +112,10 @@ def add_product():
         date = clean_date(date)
         if type(date) == datetime.date:
             date_error = False
-    new_product = Product(product_name=product, product_price=price, product_quantity=quantity, date_updated=date)
+    new_product = (Product(product_name=product,
+                           product_price=price,
+                           product_quantity=quantity,
+                           date_updated=date))
     if check_duplicate(new_product):
         session.add(new_product)
         session.commit()
@@ -123,14 +127,18 @@ def check_duplicate(new_product):
         product_names.append(product.product_name)
     if new_product.product_name in product_names:
         for product in session.query(Product):
-            if new_product.product_name == product.product_name and new_product.date_updated >= product.date_updated:
+            if new_product.product_name == (product.product_name and
+                                            new_product.date_updated >=
+                                            product.date_updated):
                 new_product.product_id = product.product_id
                 session.delete(product)
                 session.commit()
                 print('\nItem updated!')
                 time.sleep(1.5)
                 return True
-            elif new_product.product_name == product.product_name and new_product.date_updated < product.date_updated:
+            elif new_product.product_name == (product.product_name and
+                                              new_product.date_updated <
+                                              product.date_updated):
                 print('\nThis product is already up to date in the inventory')
                 time.sleep(1.5)
                 return False
@@ -138,11 +146,14 @@ def check_duplicate(new_product):
         print('\nNew product added!')
         time.sleep(1.5)
         return True
-        
+
 
 def backup_csv():
     with open('backup.csv', 'a') as csvfile:
-        fieldnames = ['product_name', 'product_price', 'product_quantity', 'date_updated']
+        fieldnames = ['product_name',
+                      'product_price',
+                      'product_quantity',
+                      'date_updated']
         productwriter = csv.DictWriter(csvfile, fieldnames=fieldnames)
         productwriter.writeheader()
         for product in session.query(Product):
@@ -163,23 +174,30 @@ def add_csv():
         data = csv.reader(csvfile)
         next(data)
         for row in data:
-            product_in_db = session.query(Product).filter(Product.product_name==row[0]).one_or_none()
-            if product_in_db == None:
+            product_in_db = (session.query(Product)
+                             .filter(Product.product_name ==
+                             row[0]).one_or_none())
+            if product_in_db is None:
                 product = row[0]
                 price = clean_price(row[1])
                 quantity = int(row[2])
                 date = clean_date(row[3])
-                new_product = Product(product_name=product, product_price=price, product_quantity=quantity, date_updated=date)
+                new_product = Product(product_name=product,
+                                      product_price=price,
+                                      product_quantity=quantity,
+                                      date_updated=date)
                 session.add(new_product)
-            elif product_in_db != None:
+            elif product_in_db is not None:
                 new_date = clean_date(row[3])
-                product = session.query(Product).filter(Product.product_name==row[0]).first()
-                if product_in_db.product_name == product.product_name and product.date_updated <= new_date:
+                product = (session.query(Product)
+                           .filter(Product.product_name == row[0]).first())
+                if product_in_db.product_name == (product.product_name and
+                                                  product.date_updated <=
+                                                  new_date):
                     product.product_price = clean_price(row[1])
                     product.product_quantity = int(row[2])
                     product.date_updated = new_date
-        session.commit()          
-               
+        session.commit()
 
 
 def menu():
@@ -196,7 +214,7 @@ def menu():
         choice = input('What would you like to do? ').lower()
         if choice in ['v', 'a', 'b', 'x']:
             return choice
-        else: 
+        else:
             input('''
                 \rPlease choose an option from above: v, a, b, or x
                 \rPress enter to try again.''')
@@ -215,8 +233,8 @@ def app():
         elif choice == 'x':
             print('\nGoodbye!')
             app_running = False
-            
-        
+
+
 if __name__ == '__main__':
     Base.metadata.create_all(engine)
     add_csv()
