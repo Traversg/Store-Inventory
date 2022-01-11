@@ -37,6 +37,13 @@ def clean_price(price_str):
             \rEx. $7.51
             \rPress enter to try again.
             \r**********************''')
+    except ValueError:
+            input('''
+            \n***** PRICE ERROR *****
+            \rThe price from should be a number with a $ symbol
+            \rEx. $7.51
+            \rPress enter to try again.
+            \r**********************''')
     else:
         return int(price_float * 100)
 
@@ -127,14 +134,16 @@ def check_duplicate(new_product):
         product_names.append(product.product_name)
     if new_product.product_name in product_names:
         for product in session.query(Product):
-            if new_product.product_name == product.product_name and new_product.date_updated >= product.date_updated:
+            if (new_product.product_name == product.product_name and
+                    new_product.date_updated >= product.date_updated):
                 new_product.product_id = product.product_id
                 session.delete(product)
                 session.commit()
                 print('\nItem updated!')
                 time.sleep(1.5)
                 return True
-            elif new_product.product_name == product.product_name and new_product.date_updated < product.date_updated:
+            elif (new_product.product_name == product.product_name and
+                    new_product.date_updated < product.date_updated):
                 print('\nThis product is already up to date in the inventory')
                 time.sleep(1.5)
                 return False
@@ -187,7 +196,8 @@ def add_csv():
                 new_date = clean_date(row[3])
                 product = (session.query(Product)
                            .filter(Product.product_name == row[0]).first())
-                if product_in_db.product_name == product.product_name and product.date_updated <= new_date:
+                if (product_in_db.product_name == product.product_name and
+                        product.date_updated <= new_date):
                     product.product_price = clean_price(row[1])
                     product.product_quantity = int(row[2])
                     product.date_updated = new_date
