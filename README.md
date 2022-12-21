@@ -4,5 +4,8 @@ Store Inventory is a backend application that allows a user to view, find, and a
 
 ![Image 1: Story Inventory Application](/store_inventory_preview.png)
 
+Before you run this program, please install SQLAlchemy:
+`pip3 install sqlalchemy`
+
 To run this program use this command in your terminal:
 `python3 app.py`
